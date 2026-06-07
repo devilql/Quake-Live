@@ -208,6 +208,10 @@ Requires the players in question to not have QLDS admin/mod.
 Usage:
     A vote is called.
     Player with permlevel 3 or above presses F1/F2 once. Pressing F1/F2 a second time forces the vote.
+
+Testing:
+    From the Quake-Live repository root:
+        python -m unittest discover -s minqlx-plugins/tests -p "test_*.py"
 ```
 
 ### `votestats.py`
