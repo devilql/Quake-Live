@@ -88,6 +88,16 @@ class TestVoteManager(unittest.TestCase):
         self.assertEqual([False], fake_minqlx.force_vote_calls)
         self.assertEqual(["Privileged^7 vetoed the vote."], fake_minqlx.messages)
 
+    def test_vote_logging_records_force_path(self):
+        player = FakePlayer(9, "LoggerPlayer")
+        self.plugin.db.permissions[player.steam_id] = 3
+
+        self.plugin.handle_vote_started(None, "map", "campgrounds")
+        self.plugin.handle_vote(player, True)
+        self.plugin.handle_vote(player, False)
+
+        self.assertTrue(any("forced vote" in message.lower() for message in fake_minqlx.logger.messages))
+
     def test_privileged_second_vote_preserves_yes_direction(self):
         player = FakePlayer(8, "YesVote")
         self.plugin.db.permissions[player.steam_id] = 3
@@ -99,16 +109,16 @@ class TestVoteManager(unittest.TestCase):
         self.assertEqual(fake_minqlx.RET_STOP_ALL, result)
         self.assertEqual([True], fake_minqlx.force_vote_calls)
 
-    def test_qlds_admin_vote_does_not_fake_vote_counters(self):
+    def test_qlds_admin_vote_fakes_counter_for_impression(self):
         admin = FakePlayer(4, "Admin", privileges="admin")
         fake_minqlx.set_configstring(10, "1")
         fake_minqlx.set_configstring(11, "2")
 
         result = self.plugin.handle_vote(admin, True)
 
-        self.assertIsNone(result)
+        self.assertEqual(fake_minqlx.RET_STOP_ALL, result)
         self.assertEqual([], fake_minqlx.force_vote_calls)
-        self.assertEqual("1", fake_minqlx.get_configstring(10))
+        self.assertEqual("2", fake_minqlx.get_configstring(10))
         self.assertEqual("2", fake_minqlx.get_configstring(11))
 
     def test_protected_kick_vote_is_stopped(self):

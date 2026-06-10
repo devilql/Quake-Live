@@ -11,12 +11,24 @@ messages = []
 force_vote_calls = []
 
 
+class Logger:
+    def __init__(self):
+        self.messages = []
+
+    def info(self, message):
+        self.messages.append(str(message))
+
+
+logger = Logger()
+
+
 def reset():
     cvars.clear()
     configstrings.clear()
     players[:] = []
     messages[:] = []
     force_vote_calls[:] = []
+    logger.messages.clear()
 
 
 def set_cvar_once(name, value):
@@ -44,7 +56,15 @@ def force_vote(pass_it):
     force_vote_calls.append(pass_it)
 
 
+def get_logger(name=None):
+    return logger
+
+
 class Plugin:
+    @property
+    def logger(self):
+        return get_logger(self)
+
     def add_hook(self, event, handler):
         if not hasattr(self, "_hooks"):
             self._hooks = []
